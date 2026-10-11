@@ -30,14 +30,17 @@ jobs:
           npm run build --if-present
           npm run test --if-present
 
+      - name: Prepare standalone deployment
+        run: |
+          cp -R public .next/standalone/public
+          mkdir -p .next/standalone/.next
+          cp -R .next/static .next/standalone/.next/static
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: |
-            .
-            !.env
-            !.env.*
+          path: .next/standalone
           include-hidden-files: true
 
   deploy:
