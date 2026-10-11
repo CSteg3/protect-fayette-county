@@ -28,7 +28,7 @@ export default function Home() {
     <header className="site-header">
       <a className="brand" href="#top" aria-label="Protect Fayette County home"><span className="brand-mark"><b>★</b></span><span>Protect <strong>Fayette County</strong></span></a>
       <nav id="primary-navigation" className={menuOpen ? "nav open" : "nav"} aria-label="Primary navigation">
-        <a href="/stories">Our stories</a><a href="#project" onClick={()=>setMenuOpen(false)}>The project</a><a href="#events" onClick={()=>setMenuOpen(false)}>Events</a><a href="#news" onClick={()=>setMenuOpen(false)}>News</a><a href="#action" onClick={()=>setMenuOpen(false)}>Take action</a><a className="admin-link" href="/admin">Admin</a>
+        <a href="/stories">Our stories</a><a href="#project" onClick={()=>setMenuOpen(false)}>The project</a><a href="#events" onClick={()=>setMenuOpen(false)}>Events</a><a href="#news" onClick={()=>setMenuOpen(false)}>News</a><a href="#action" onClick={()=>setMenuOpen(false)}>Take action</a>
       </nav>
       <button type="button" className="menu-button" onClick={()=>setMenuOpen(!menuOpen)} aria-label="Toggle menu" aria-expanded={menuOpen} aria-controls="primary-navigation">{menuOpen ? <X/> : <Menu/>}</button>
     </header>
@@ -55,6 +55,6 @@ export default function Home() {
     <section id="news" className="section news-section"><div className="section-heading row"><div><p className="eyebrow dark"><span/> Stay informed</p><h2>News &amp; resources</h2></div><Newspaper size={44}/></div><div className="news-grid">{news.map((item,i)=><article className={i===0?'featured':''} key={item.title}><div className="news-top"><span>{item.tag}</span><small>{item.date}</small></div><h3>{item.title}</h3><p>{item.text}</p><a href={item.href} target="_blank" rel="noreferrer">{item.linkLabel} <ArrowRight size={16}/></a></article>)}</div></section>
 
     <section id="action" className="action-section"><div><p className="eyebrow"><span/> Stand with your neighbors</p><h2>Keep Fayette County<br/>in community hands.</h2></div><div className="action-card"><h3>Join the local update list</h3><p>Email the organizing team to receive meeting notices, new documents, and clear ways to participate.</p><a className="button light-button" href="mailto:faycofriends@gmail.com?subject=Protect%20Fayette%20County%20updates">Email faycofriends@gmail.com <ArrowRight size={18}/></a><small>An online sign-up form will be linked here when available.</small></div></section>
-    <footer><div className="brand"><span className="brand-mark"><b>★</b></span><span>Protect <strong>Fayette County</strong></span></div><p>For ranch families, neighbors, and a transparent public process.</p><div><a href="/stories">Stories</a><a href="#project">Project</a><a href="#events">Events</a><a href="#news">News</a><a href="/admin">Admin</a></div></footer>
+    <footer><div className="brand"><span className="brand-mark"><b>★</b></span><span>Protect <strong>Fayette County</strong></span></div><p>For ranch families, neighbors, and a transparent public process.</p><div><a href="/stories">Stories</a><a href="#project">Project</a><a href="#events">Events</a><a href="#news">News</a></div></footer>
   </main>;
 }
