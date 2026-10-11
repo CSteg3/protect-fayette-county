@@ -17,6 +17,8 @@ function table() {
   return client;
 }
 
+export function isEventStorageConfigured(){return Boolean(process.env.AZURE_STORAGE_CONNECTION_STRING||process.env.NODE_ENV!=="production");}
+
 async function ensureTable(storage:TableClient){
   if(!ready)ready=storage.createTable().then(()=>{}).catch((error:unknown)=>{const status=(error as {statusCode?:number}).statusCode;if(status!==409)throw error;});
   await ready;
