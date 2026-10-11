@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { ArrowRight, ChevronRight, Leaf, Menu, Newspaper, Shield, Sun, X, Zap } from "lucide-react";
 
 type EventItem = { id: number; title: string; description: string; location: string; startsAt: string; status: string };
@@ -27,7 +28,7 @@ export default function Home() {
     <header className="site-header">
       <a className="brand" href="#top" aria-label="Protect Fayette County home"><span className="brand-mark"><b>★</b></span><span>Protect <strong>Fayette County</strong></span></a>
       <nav className={menuOpen ? "nav open" : "nav"} aria-label="Primary navigation">
-        <a href="#project" onClick={()=>setMenuOpen(false)}>The project</a><a href="#events" onClick={()=>setMenuOpen(false)}>Events</a><a href="#news" onClick={()=>setMenuOpen(false)}>News</a><a href="#action" onClick={()=>setMenuOpen(false)}>Take action</a><a className="admin-link" href="/admin">Admin</a>
+        <a href="/stories">Our stories</a><a href="#project" onClick={()=>setMenuOpen(false)}>The project</a><a href="#events" onClick={()=>setMenuOpen(false)}>Events</a><a href="#news" onClick={()=>setMenuOpen(false)}>News</a><a href="#action" onClick={()=>setMenuOpen(false)}>Take action</a><a className="admin-link" href="/admin">Admin</a>
       </nav>
       <button className="menu-button" onClick={()=>setMenuOpen(!menuOpen)} aria-label="Toggle menu">{menuOpen ? <X/> : <Menu/>}</button>
     </header>
@@ -37,7 +38,7 @@ export default function Home() {
       <p className="hero-copy">Ranch families, neighbors, and stewards of this land deserve a clear voice in what comes next. Follow the proposed data center and help protect the working countryside we call home.</p>
       <div className="hero-actions"><a className="button primary" href="#project">Understand the project <ArrowRight size={18}/></a><a className="button ghost" href="#events">See community events</a></div>
       <p className="source-note">Community advocacy site · Verify dates and official actions with the relevant public agency.</p>
-    </div><div className="hero-art" aria-label="Illustration of ranch country and loblolly pines"><div className="sun"/><div className="cloud cloud-one"/><div className="cloud cloud-two"/><div className="hill far"/><div className="pine-line"><i/><i/><i/><i/><i/><i/></div><div className="hill near"/><div className="barn"><i/><b/></div><div className="windmill"><i/><b/></div><div className="fence"><i/><i/><i/><i/></div><div className="road"/><div className="data-building"><span className="building-lights"/><span className="building-lights second"/><small>PROPOSED SITE</small></div><div className="art-caption"><span>What happens when an industrial-scale neighbor meets ranch country?</span><a href="#project">Explore the questions <ChevronRight size={16}/></a></div></div></section>
+    </div><div className="hero-art"><Image className="hero-image" src="/ranch-sunset-original.jpg" alt="A Fayette County pasture and ranch barn beneath a dramatic amber sunset" fill priority sizes="(max-width: 900px) 100vw, 50vw"/><div className="art-caption"><span>What happens when an industrial-scale neighbor meets ranch country?</span><a href="#project">Explore the questions <ChevronRight size={16}/></a></div></div></section>
 
     <section className="quick-strip" aria-label="Key topics"><span>What neighbors are asking</span><div><Zap size={18}/> Grid demand</div><div><Sun size={18}/> Water use</div><div><Shield size={18}/> Noise &amp; safety</div><div><Leaf size={18}/> Land &amp; heritage</div></section>
 
@@ -53,7 +54,7 @@ export default function Home() {
 
     <section id="news" className="section news-section"><div className="section-heading row"><div><p className="eyebrow dark"><span/> Stay informed</p><h2>News &amp; resources</h2></div><Newspaper size={44}/></div><div className="news-grid">{news.map((item,i)=><article className={i===0?'featured':''} key={item.title}><div className="news-top"><span>{item.tag}</span><small>{item.date}</small></div><h3>{item.title}</h3><p>{item.text}</p><a href="#action">Read the guide <ArrowRight size={16}/></a></article>)}</div></section>
 
-    <section id="action" className="action-section"><div><p className="eyebrow"><span/> Stand with your neighbors</p><h2>Keep Fayette County<br/>in community hands.</h2></div><div className="action-card"><h3>Join the local update list</h3><p>Connect with the organizer to receive verified meeting notices, new documents, and clear ways to participate.</p><a className="button light-button" href="mailto:organizer@example.org?subject=Protect%20Fayette%20County%20updates">Email the organizer <ArrowRight size={18}/></a><small>Replace this placeholder email before public launch.</small></div></section>
-    <footer><div className="brand"><span className="brand-mark"><b>★</b></span><span>Protect <strong>Fayette County</strong></span></div><p>For ranch families, neighbors, and a transparent public process.</p><div><a href="#project">Project</a><a href="#events">Events</a><a href="#news">News</a><a href="/admin">Admin</a></div></footer>
+    <section id="action" className="action-section"><div><p className="eyebrow"><span/> Stand with your neighbors</p><h2>Keep Fayette County<br/>in community hands.</h2></div><div className="action-card"><h3>Join the local update list</h3><p>Email the organizing team to receive meeting notices, new documents, and clear ways to participate.</p><a className="button light-button" href="mailto:faycofriends@gmail.com?subject=Protect%20Fayette%20County%20updates">Email faycofriends@gmail.com <ArrowRight size={18}/></a><small>An online sign-up form will be linked here when available.</small></div></section>
+    <footer><div className="brand"><span className="brand-mark"><b>★</b></span><span>Protect <strong>Fayette County</strong></span></div><p>For ranch families, neighbors, and a transparent public process.</p><div><a href="/stories">Stories</a><a href="#project">Project</a><a href="#events">Events</a><a href="#news">News</a><a href="/admin">Admin</a></div></footer>
   </main>;
 }

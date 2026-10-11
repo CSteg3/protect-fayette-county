@@ -15,18 +15,18 @@ Open `http://localhost:3000`. In development, `/admin` accepts the temporary pas
 
 Copy the keys from `.env.example` into the hosting provider's environment-variable settings:
 
-- `DATABASE_URL`: PostgreSQL connection string
+- `AZURE_STORAGE_CONNECTION_STRING`: connection string for a standard Azure Storage account
 - `ADMIN_PASSWORD`: long, unique administrator password
 - `SESSION_SECRET`: random string of at least 32 characters
 
-In production, the app refuses to use file storage and requires PostgreSQL. The events table is created automatically on first use.
+In production, the app refuses to use local file storage and requires Azure Table Storage. The `communityevents` table is created automatically on first use.
 
 ## Azure deployment
 
 Recommended stack:
 
 - Azure App Service with Node.js 20+
-- Azure Database for PostgreSQL Flexible Server
+- Azure Storage account with Table Storage
 - GitHub Actions deployment configured from the App Service Deployment Center
 
 Build command: `npm ci && npm run build`

@@ -1,45 +1,53 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import postgres from "postgres";
+import { TableClient, type TableEntity } from "@azure/data-tables";
 
 export type EventItem = { id:number; title:string; description:string; location:string; startsAt:string; status:string; createdBy:string; createdAt:string; updatedAt:string };
+type EventEntity = TableEntity<Omit<EventItem,"id">>;
+
 const dataFile = path.join(process.cwd(), "data", "events.json");
-let sql: ReturnType<typeof postgres> | null = null;
+const partitionKey = "events";
+let client: TableClient | null = null;
+let ready: Promise<void> | null = null;
 
-function database() {
-  if (!process.env.DATABASE_URL) return null;
-  if (!sql) sql = postgres(process.env.DATABASE_URL, { ssl: "require", max: 5 });
-  return sql;
+function table() {
+  const connectionString=process.env.AZURE_STORAGE_CONNECTION_STRING;
+  if(!connectionString)return null;
+  if(!client)client=TableClient.fromConnectionString(connectionString,"communityevents");
+  return client;
 }
 
-async function ensureTable(db: NonNullable<ReturnType<typeof database>>) {
-  await db`CREATE TABLE IF NOT EXISTS events (id BIGSERIAL PRIMARY KEY, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', location TEXT NOT NULL DEFAULT '', starts_at TIMESTAMPTZ NOT NULL, status TEXT NOT NULL DEFAULT 'draft', created_by TEXT NOT NULL DEFAULT 'admin', created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
+async function ensureTable(storage:TableClient){
+  if(!ready)ready=storage.createTable().then(()=>{}).catch((error:unknown)=>{const status=(error as {statusCode?:number}).statusCode;if(status!==409)throw error;});
+  await ready;
 }
 
-async function localRead(): Promise<EventItem[]> { return JSON.parse(await fs.readFile(dataFile, "utf8")); }
-async function localWrite(items: EventItem[]) { await fs.writeFile(dataFile, JSON.stringify(items, null, 2) + "\n"); }
-function requireLocalDev() { if (process.env.NODE_ENV === "production") throw new Error("DATABASE_URL is required in production"); }
+async function localRead():Promise<EventItem[]>{return JSON.parse(await fs.readFile(dataFile,"utf8"));}
+async function localWrite(items:EventItem[]){await fs.writeFile(dataFile,JSON.stringify(items,null,2)+"\n");}
+function requireLocalDev(){if(process.env.NODE_ENV==="production")throw new Error("AZURE_STORAGE_CONNECTION_STRING is required in production");}
 
-export async function listEvents(publishedOnly=false): Promise<EventItem[]> {
-  const db=database();
-  if (!db) { requireLocalDev(); const rows=await localRead(); return rows.filter(x=>!publishedOnly||x.status==="published").sort((a,b)=>b.startsAt.localeCompare(a.startsAt)); }
-  await ensureTable(db);
-  const rows = publishedOnly ? await db`SELECT * FROM events WHERE status='published' ORDER BY starts_at DESC` : await db`SELECT * FROM events ORDER BY starts_at DESC`;
-  return rows.map(mapRow);
+export async function listEvents(publishedOnly=false):Promise<EventItem[]>{
+  const storage=table();
+  if(!storage){requireLocalDev();const rows=await localRead();return rows.filter(x=>!publishedOnly||x.status==="published").sort((a,b)=>b.startsAt.localeCompare(a.startsAt));}
+  await ensureTable(storage);const rows:EventItem[]=[];
+  for await(const entity of storage.listEntities<EventEntity>({queryOptions:{filter:`PartitionKey eq '${partitionKey}'`}})){const item=fromEntity(entity);if(!publishedOnly||item.status==="published")rows.push(item);}
+  return rows.sort((a,b)=>b.startsAt.localeCompare(a.startsAt));
 }
 
-export async function createEvent(input: Omit<EventItem,"id"|"createdAt"|"updatedAt">) {
-  const db=database(); const now=new Date().toISOString();
-  if (!db) { requireLocalDev(); const rows=await localRead(); const item={...input,id:Math.max(0,...rows.map(x=>x.id))+1,createdAt:now,updatedAt:now}; await localWrite([item,...rows]); return item; }
-  await ensureTable(db); const [row]=await db`INSERT INTO events (title,description,location,starts_at,status,created_by) VALUES (${input.title},${input.description},${input.location},${input.startsAt},${input.status},${input.createdBy}) RETURNING *`; return mapRow(row);
+export async function createEvent(input:Omit<EventItem,"id"|"createdAt"|"updatedAt">){
+  const storage=table();const now=new Date().toISOString();const id=Date.now();const item={...input,id,createdAt:now,updatedAt:now};
+  if(!storage){requireLocalDev();const rows=await localRead();await localWrite([item,...rows]);return item;}
+  await ensureTable(storage);await storage.createEntity(toEntity(item));return item;
 }
 
-export async function updateEvent(id:number,input:Pick<EventItem,"title"|"description"|"location"|"startsAt"|"status">) {
-  const db=database();
-  if (!db) { requireLocalDev(); const rows=await localRead(); let saved:EventItem|undefined; const next=rows.map(x=>x.id===id?(saved={...x,...input,updatedAt:new Date().toISOString()}):x); await localWrite(next); return saved; }
-  await ensureTable(db); const [row]=await db`UPDATE events SET title=${input.title},description=${input.description},location=${input.location},starts_at=${input.startsAt},status=${input.status},updated_at=NOW() WHERE id=${id} RETURNING *`; return row?mapRow(row):undefined;
+export async function updateEvent(id:number,input:Pick<EventItem,"title"|"description"|"location"|"startsAt"|"status">){
+  const storage=table();
+  if(!storage){requireLocalDev();const rows=await localRead();let saved:EventItem|undefined;const next=rows.map(x=>x.id===id?(saved={...x,...input,updatedAt:new Date().toISOString()}):x);await localWrite(next);return saved;}
+  await ensureTable(storage);
+  try{const existing=await storage.getEntity<EventEntity>(partitionKey,String(id));const item={...fromEntity(existing),...input,updatedAt:new Date().toISOString()};await storage.updateEntity(toEntity(item),"Replace");return item;}catch(error){if((error as {statusCode?:number}).statusCode===404)return undefined;throw error;}
 }
 
-export async function deleteEvent(id:number) { const db=database(); if(!db){requireLocalDev();await localWrite((await localRead()).filter(x=>x.id!==id));return;} await ensureTable(db);await db`DELETE FROM events WHERE id=${id}`; }
+export async function deleteEvent(id:number){const storage=table();if(!storage){requireLocalDev();await localWrite((await localRead()).filter(x=>x.id!==id));return;}await ensureTable(storage);await storage.deleteEntity(partitionKey,String(id));}
 
-function mapRow(row: Record<string,unknown>):EventItem { return {id:Number(row.id),title:String(row.title),description:String(row.description),location:String(row.location),startsAt:new Date(String(row.starts_at)).toISOString(),status:String(row.status),createdBy:String(row.created_by),createdAt:new Date(String(row.created_at)).toISOString(),updatedAt:new Date(String(row.updated_at)).toISOString()}; }
+function toEntity(item:EventItem):EventEntity{return {partitionKey,rowKey:String(item.id),title:item.title,description:item.description,location:item.location,startsAt:item.startsAt,status:item.status,createdBy:item.createdBy,createdAt:item.createdAt,updatedAt:item.updatedAt};}
+function fromEntity(entity:EventEntity):EventItem{return {id:Number(entity.rowKey),title:String(entity.title),description:String(entity.description),location:String(entity.location),startsAt:String(entity.startsAt),status:String(entity.status),createdBy:String(entity.createdBy),createdAt:String(entity.createdAt),updatedAt:String(entity.updatedAt)};}
