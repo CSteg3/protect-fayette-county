@@ -57,3 +57,12 @@
 .stakes-collage{position:relative;display:grid;grid-template-columns:1.2fr .8fr .8fr;grid-template-rows:190px 190px;gap:10px;margin:42px 0 0}.stakes-collage figure{position:relative;min-width:0;min-height:0;margin:0;overflow:hidden;background:#57483e}.stakes-collage figure:after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);pointer-events:none}.stakes-collage img{object-fit:cover;transition:transform .5s ease}.stakes-collage figure:hover img{transform:scale(1.025)}.stakes-collage .collage-land{grid-row:1/3}.stakes-collage p{position:absolute;right:14px;bottom:14px;z-index:2;max-width:58%;margin:0;padding:10px 12px;background:rgba(37,36,50,.84);color:#f8ead9!important;font:italic 13px/1.45 Georgia,serif;pointer-events:none}
 @media(max-width:900px){.stakes-collage{grid-template-columns:1fr 1fr;grid-template-rows:300px 175px 175px}.stakes-collage .collage-land{grid-column:1/3;grid-row:auto}.stakes-collage p{max-width:calc(100% - 28px)}}
 @media(max-width:600px){.stakes-collage{grid-template-rows:230px 135px 135px;gap:7px;margin-top:32px}.stakes-collage p{margin:0 8px 8px;padding:8px 10px;font-size:11px}.stakes-collage img{transition:none}.stakes-collage figure:hover img{transform:none}}
+
+.event-card{grid-template-columns:100px minmax(0,1fr) auto}
+.event-actions{display:flex;align-items:center;gap:10px}
+.calendar-button{min-height:44px;padding:0 15px;border:1px solid var(--rust);border-radius:999px;background:transparent;color:var(--rust);display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer;transition:color .18s ease,background-color .18s ease,transform .18s ease}
+.calendar-button:hover{background:var(--rust);color:white;transform:translateY(-1px)}
+.event-actions>a{width:44px;height:44px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;transition:background-color .18s ease,border-color .18s ease}
+.event-actions>a:hover{background:#eee5d4;border-color:#a49376}
+@media(max-width:700px){.event-card{grid-template-columns:66px minmax(0,1fr)}.event-actions{grid-column:2;justify-content:flex-start;margin-top:4px}.event-actions>a{display:none}.calendar-button{min-width:0;max-width:100%}}
+@media(prefers-reduced-motion:reduce){.calendar-button,.event-actions>a{transition:none}}

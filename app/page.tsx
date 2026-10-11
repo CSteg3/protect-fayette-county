@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { ArrowRight, ChevronRight, Leaf, Menu, Newspaper, Shield, Sun, X, Zap } from "lucide-react";
+import { ArrowRight, CalendarPlus, ChevronRight, Leaf, Menu, Newspaper, Shield, Sun, X, Zap } from "lucide-react";
 
 type EventItem = { id: number; title: string; description: string; location: string; startsAt: string; status: string };
 const sampleEvents: EventItem[] = [
@@ -16,6 +16,26 @@ const news = [
 ];
 
 function fmtDate(value: string) { return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value)); }
+
+function calendarDate(value: Date) { return value.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""); }
+function calendarText(value: string) { return value.replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/([;,])/g, "\\$1"); }
+function addToCalendar(event: EventItem) {
+  const start = new Date(event.startsAt);
+  if (Number.isNaN(start.getTime())) return;
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  const calendar = [
+    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Protect Fayette County//Community Events//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "BEGIN:VEVENT",
+    `UID:${event.id}-${start.getTime()}@protect-fayette-county`, `DTSTAMP:${calendarDate(new Date())}`, `DTSTART:${calendarDate(start)}`, `DTEND:${calendarDate(end)}`,
+    `SUMMARY:${calendarText(event.title)}`, `DESCRIPTION:${calendarText(event.description)}`, `LOCATION:${calendarText(event.location)}`,
+    "END:VEVENT", "END:VCALENDAR",
+  ].join("\r\n");
+  const url = URL.createObjectURL(new Blob([calendar], { type: "text/calendar;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${event.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "fayette-county-event"}.ics`;
+  document.body.appendChild(link); link.click(); link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -50,7 +70,7 @@ export default function Home() {
 
     <section className="timeline-section"><div className="section-heading light"><p className="eyebrow"><span/> Follow the process</p><h2>From proposal to public decision</h2></div><div className="timeline">{[["1","Proposal identified","Collect site plans, ownership records, and developer materials."],["2","Agency review","Track permits, utility requests, incentives, and environmental review."],["3","Public input","Publish meeting dates, comment windows, and source documents."],["4","Decision & oversight","Record votes, conditions, construction milestones, and compliance."]].map(([n,t,d])=><article key={n}><b>{n}</b><h3>{t}</h3><p>{d}</p></article>)}</div></section>
 
-    <section id="events" className="section events-section"><div className="section-heading row"><div><p className="eyebrow dark"><span/> Show up</p><h2>Community calendar</h2></div><div className="filter" aria-label="Filter events"><button type="button" className={filter==='all'?'active':''} onClick={()=>setFilter('all')}>All</button><button type="button" className={filter==='published'?'active':''} onClick={()=>setFilter('published')}>Confirmed</button></div></div><div className="events-list">{visibleEvents.map((event)=><article className="event-card" key={event.id}><time><strong>{new Date(event.startsAt).toLocaleDateString('en-US',{day:'2-digit'})}</strong><span>{new Date(event.startsAt).toLocaleDateString('en-US',{month:'short'})}</span></time><div className="event-info"><div className="event-meta"><span>{event.status==='sample'?'Sample listing':event.status}</span> {fmtDate(event.startsAt)}</div><h3>{event.title}</h3><p>{event.description}</p><small>{event.location}</small></div><a href={`mailto:faycofriends@gmail.com?subject=${encodeURIComponent(`Question about ${event.title}`)}`} aria-label={`Ask the organizers about ${event.title}`} title="Ask the organizers about this event"><ArrowRight/></a></article>)}</div></section>
+    <section id="events" className="section events-section"><div className="section-heading row"><div><p className="eyebrow dark"><span/> Show up</p><h2>Community calendar</h2></div><div className="filter" aria-label="Filter events"><button type="button" className={filter==='all'?'active':''} onClick={()=>setFilter('all')}>All</button><button type="button" className={filter==='published'?'active':''} onClick={()=>setFilter('published')}>Confirmed</button></div></div><div className="events-list">{visibleEvents.map((event)=><article className="event-card" key={event.id}><time><strong>{new Date(event.startsAt).toLocaleDateString('en-US',{day:'2-digit'})}</strong><span>{new Date(event.startsAt).toLocaleDateString('en-US',{month:'short'})}</span></time><div className="event-info"><div className="event-meta"><span>{event.status==='sample'?'Sample listing':event.status}</span> {fmtDate(event.startsAt)}</div><h3>{event.title}</h3><p>{event.description}</p><small>{event.location}</small></div><div className="event-actions"><button type="button" className="calendar-button" onClick={()=>addToCalendar(event)} aria-label={`Add ${event.title} to your calendar`}><CalendarPlus size={17}/><span>Add to calendar</span></button><a href={`mailto:faycofriends@gmail.com?subject=${encodeURIComponent(`Question about ${event.title}`)}`} aria-label={`Ask the organizers about ${event.title}`} title="Ask the organizers about this event"><ArrowRight/></a></div></article>)}</div></section>
 
     <section id="news" className="section news-section"><div className="section-heading row"><div><p className="eyebrow dark"><span/> Stay informed</p><h2>News &amp; resources</h2></div><Newspaper size={44}/></div><div className="news-grid">{news.map((item,i)=><article className={i===0?'featured':''} key={item.title}><div className="news-top"><span>{item.tag}</span><small>{item.date}</small></div><h3>{item.title}</h3><p>{item.text}</p><a href={item.href} target="_blank" rel="noreferrer">{item.linkLabel} <ArrowRight size={16}/></a></article>)}</div></section>
 
