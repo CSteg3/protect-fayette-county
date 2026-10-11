@@ -49,6 +49,9 @@
 .heritage-band{display:block}
 .heritage-band>div:last-child{border:0;padding-left:0}
 .stake-content{max-width:1120px;margin-inline:auto}
+.hero-content:after{pointer-events:none}
+.hero-actions{position:relative;z-index:3}
+#project,#events,#news,#action{scroll-margin-top:96px}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nav,.button,.text-link,.news-grid a,.event-card>a,.row-actions button,.modal-close,.menu-button,.filter button{transition:none}}
 
 .stakes-collage{position:relative;display:grid;grid-template-columns:1.2fr .8fr .8fr;grid-template-rows:190px 190px;gap:10px;margin:42px 0 0}.stakes-collage figure{position:relative;min-width:0;min-height:0;margin:0;overflow:hidden;background:#57483e}.stakes-collage figure:after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);pointer-events:none}.stakes-collage img{object-fit:cover;transition:transform .5s ease}.stakes-collage figure:hover img{transform:scale(1.025)}.stakes-collage .collage-land{grid-row:1/3}.stakes-collage p{position:absolute;right:14px;bottom:14px;z-index:2;max-width:58%;margin:0;padding:10px 12px;background:rgba(37,36,50,.84);color:#f8ead9!important;font:italic 13px/1.45 Georgia,serif;pointer-events:none}
