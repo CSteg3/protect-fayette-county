@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { publicUrl } from "./public-url";
 
 const COOKIE_NAME = "pfc_admin";
 const MAX_AGE = 60 * 60 * 12;
@@ -39,4 +40,4 @@ export async function isAdmin() {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export async function requireAdmin() { if (!(await isAdmin())) redirect("/admin/login"); }
+export async function requireAdmin() { if (!(await isAdmin())) redirect(publicUrl("/admin/login",await headers())); }
