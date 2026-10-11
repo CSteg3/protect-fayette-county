@@ -1,3 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSession, isAdminAuthConfigured, verifyAdminPassword } from "../../../../lib/auth";
-export async function POST(request:NextRequest){if(!isAdminAuthConfigured())return NextResponse.redirect(new URL("/admin/login?error=config",request.url),303);const data=await request.formData();if(!verifyAdminPassword(String(data.get("password")||"")))return NextResponse.redirect(new URL("/admin/login?error=password",request.url),303);await createAdminSession();return NextResponse.redirect(new URL("/admin",request.url),303)}
+function redirect(path:string){return new NextResponse(null,{status:303,headers:{Location:path}})}
+export async function POST(request:NextRequest){if(!isAdminAuthConfigured())return redirect("/admin/login?error=config");const data=await request.formData();if(!verifyAdminPassword(String(data.get("password")||"")))return redirect("/admin/login?error=password");await createAdminSession();return redirect("/admin")}
