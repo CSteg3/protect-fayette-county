@@ -1,0 +1,5 @@
+import { NextRequest, NextResponse } from "next/server";
+import { isAdmin } from "../../../../lib/auth";
+import { deleteEvent, updateEvent } from "../../../../lib/events";
+export async function PATCH(request:NextRequest,{params}:{params:Promise<{id:string}>}){if(!(await isAdmin()))return NextResponse.json({error:"Admin sign-in required"},{status:401});const {id}=await params;const body=await request.json();const updated=await updateEvent(Number(id),{title:String(body.title),description:String(body.description||""),location:String(body.location||""),startsAt:String(body.startsAt),status:body.status==="published"?"published":"draft"});return updated?NextResponse.json(updated):NextResponse.json({error:"Not found"},{status:404});}
+export async function DELETE(_:NextRequest,{params}:{params:Promise<{id:string}>}){if(!(await isAdmin()))return NextResponse.json({error:"Admin sign-in required"},{status:401});const {id}=await params;await deleteEvent(Number(id));return NextResponse.json({ok:true});}
